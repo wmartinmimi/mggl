@@ -5,6 +5,8 @@
 INTEGER = 1
 MINIUS = '-'
 PLUS = '+'
+MUTIPLY = '*'
+DIVIDE = '/'
 MATH_OPERATOR = 2
 EOF = 3
 
@@ -82,7 +84,7 @@ class Interpreter(object):
                 else:
                     return Token(INTEGER, number)
 
-        if current_char == '+' or current_char == '-':
+        if current_char == '+' or current_char == '-' or current_char == '*' or current_char == '/':
             token = Token(MATH_OPERATOR, current_char)
             self.pos += 1
             return token
@@ -128,6 +130,16 @@ class Interpreter(object):
                 right = self.current_token
                 self.eat(INTEGER)
                 result = head.value - right.value
+            if op.value == '*':
+                # we expect the current token to be a single-digit integer
+                right = self.current_token
+                self.eat(INTEGER)            
+                result = head.value * right.value
+            if op.value == '/':
+                # we expect the current token to be a single-digit integer
+                right = self.current_token
+                self.eat(INTEGER)
+                result = head.value / right.value
         else :
             self.error('Error Math operator expected')
         # after the above call the self.current_token is set to
