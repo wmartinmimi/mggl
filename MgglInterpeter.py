@@ -2,7 +2,11 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, EOF = 'INTEGER', 'PLUS', 'EOF'
+INTEGER = 1
+MINIUS = '-'
+PLUS = '+'
+MATH_OPERATOR = 2
+EOF = 3
 
 
 class Token(object):
@@ -37,8 +41,8 @@ class Interpreter(object):
         # current token instance
         self.current_token = None
 
-    def error(self):
-        raise Exception('Error parsing input')
+    def error(self, error):
+        raise Exception(error)
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)
@@ -78,12 +82,12 @@ class Interpreter(object):
                 else:
                     return Token(INTEGER, number)
 
-        if current_char == '+':
-            token = Token(PLUS, current_char)
+        if current_char == '+' or current_char == '-':
+            token = Token(MATH_OPERATOR, current_char)
             self.pos += 1
             return token
 
-        self.error()
+        self.error('Error parsing input')
 
     def eat(self, token_type):
         # compare the current token type with the passed token
@@ -93,7 +97,7 @@ class Interpreter(object):
         if self.current_token.type == token_type:
             self.current_token = self.get_next_token()
         else:
-            self.error()
+            self.error('Error parsing input')
 
     def expr(self):
         """expr -> INTEGER PLUS INTEGER"""
@@ -101,24 +105,34 @@ class Interpreter(object):
         self.current_token = self.get_next_token()
 
         # we expect the current token to be a single-digit integer
-        left = self.current_token
+        head = self.current_token
         self.eat(INTEGER)
 
         # we expect the current token to be a '+' token
         op = self.current_token
-        self.eat(PLUS)
-
-        # we expect the current token to be a single-digit integer
-        right = self.current_token
-        self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
-
+        
         # at this point INTEGER PLUS INTEGER sequence of tokens
         # has been successfully found and the method can just
         # return the result of adding two integers, thus
         # effectively interpreting client input
-        result = left.value + right.value
+        result = head.value
+        if op.type == MATH_OPERATOR:
+            self.eat(MATH_OPERATOR)
+            if op.value == '+':
+                # we expect the current token to be a single-digit integer
+                right = self.current_token
+                self.eat(INTEGER)            
+                result = head.value + right.value
+            if op.value == '-':
+                # we expect the current token to be a single-digit integer
+                right = self.current_token
+                self.eat(INTEGER)
+                result = head.value - right.value
+        else :
+            self.error('Error Math operator expected')
+        # after the above call the self.current_token is set to
+        # EOF token
+
         return result
 
 
