@@ -109,44 +109,43 @@ class Interpreter(object):
         # we expect the current token to be a single-digit integer
         head = self.current_token
         self.eat(INTEGER)
-
-        # we expect the current token to be a '+' token
-        op = self.current_token
-        
-        # at this point INTEGER PLUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding two integers, thus
-        # effectively interpreting client input
-        result = head.value
-        if op.type == MATH_OPERATOR:
-            self.eat(MATH_OPERATOR)
-            if op.value == '+':
-                # we expect the current token to be a single-digit integer
-                right = self.current_token
-                self.eat(INTEGER)            
-                result = head.value + right.value
-            if op.value == '-':
-                # we expect the current token to be a single-digit integer
-                right = self.current_token
-                self.eat(INTEGER)
-                result = head.value - right.value
-            if op.value == '*':
-                # we expect the current token to be a single-digit integer
-                right = self.current_token
-                self.eat(INTEGER)            
-                result = head.value * right.value
-            if op.value == '/':
-                # we expect the current token to be a single-digit integer
-                right = self.current_token
-                self.eat(INTEGER)
-                result = head.value / right.value
-        else :
-            self.error('Error Math operator expected')
+        result = self.mathOperation(head.value)
         # after the above call the self.current_token is set to
         # EOF token
 
         return result
 
+    def mathOperation(self, value):
+        # we expect the current token to be a '+' token
+        op = self.current_token
+            
+        # at this point INTEGER PLUS INTEGER sequence of tokens
+        # has been successfully found and the method can just
+        # return the result of adding two integers, thus
+        # effectively interpreting client input
+        result = value
+        if op.type == MATH_OPERATOR:
+            self.eat(MATH_OPERATOR)
+        
+            # we expect the current token to be a single-digit integer
+            right = self.current_token
+            self.eat(INTEGER)     
+        
+            if op.value == '+':       
+                result = value + right.value
+            if op.value == '-':
+                result = value - right.value
+            if op.value == '*':
+                result = value * right.value
+            if op.value == '/':
+                result = head.value / right.value
+
+            if self.current_token.type == EOF:
+                return result
+            if self.current_token.type == MATH_OPERATOR:
+                return self.mathOperation(result)
+
+            self.error('Error Math parsing')
 
 def main():
     while True:
