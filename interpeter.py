@@ -58,7 +58,6 @@ class TokenType(Enum):
     INTEGER       = 'INT'
     REAL          = 'REAL'
     INTEGER_DIV   = 'DIV'
-    VAR           = 'VAR'
     PROCEDURE     = 'PROCEDURE'
     BEGIN         = 'BEGIN'
     END           = 'END'      # marks the end of the block
@@ -108,7 +107,6 @@ def _build_reserved_keywords():
          'INT': <TokenType.INTEGER: 'INT'>,
          'REAL': <TokenType.REAL: 'REAL'>,
          'DIV': <TokenType.INTEGER_DIV: 'DIV'>,
-         'VAR': <TokenType.VAR: 'VAR'>,
          'PROCEDURE': <TokenType.PROCEDURE: 'PROCEDURE'>,
          'BEGIN': <TokenType.BEGIN: 'BEGIN'>,
          'END': <TokenType.END: 'END'>}
@@ -442,22 +440,40 @@ class Parser:
 
     def declarations(self):
         """
-        declarations : (VAR (variable_declaration SEMI)+)? procedure_declaration*
+        declarations : ((variable_declaration SEMI)+)? procedure_declaration*
         """
         declarations = []
 
-        if self.current_token.type == TokenType.VAR:
-            self.eat(TokenType.VAR)
-            while self.current_token.type == TokenType.ID:
-                var_decl = self.variable_declaration()
-                declarations.extend(var_decl)
-                self.eat(TokenType.SEMI)
+        while (self.current_token.type == TokenType.INTEGER or
+            self.current_token.type == TokenType.REAL
+        ):
+            var_decl = self.variable_declaration()
+            declarations.extend(var_decl)
+            self.eat(TokenType.SEMI)
 
         while self.current_token.type == TokenType.PROCEDURE:
             proc_decl = self.procedure_declaration()
             declarations.append(proc_decl)
 
         return declarations
+
+    def variable_declaration(self):
+        """variable_declaration : type_spec ID (COMMA ID)* """
+        type_node = self.type_spec()
+        
+        var_nodes = [Var(self.current_token)]  # first ID
+        self.eat(TokenType.ID)
+
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            var_nodes.append(Var(self.current_token))
+            self.eat(TokenType.ID)
+
+        var_declarations = [
+            VarDecl(var_node, type_node)
+            for var_node in var_nodes
+        ]
+        return var_declarations
 
     def formal_parameters(self):
         """ formal_parameters : ID (COMMA ID)* COLON type_spec """
@@ -494,25 +510,6 @@ class Parser:
             param_nodes.extend(self.formal_parameters())
 
         return param_nodes
-
-    def variable_declaration(self):
-        """variable_declaration : ID (COMMA ID)* COLON type_spec"""
-        var_nodes = [Var(self.current_token)]  # first ID
-        self.eat(TokenType.ID)
-
-        while self.current_token.type == TokenType.COMMA:
-            self.eat(TokenType.COMMA)
-            var_nodes.append(Var(self.current_token))
-            self.eat(TokenType.ID)
-
-        self.eat(TokenType.COLON)
-
-        type_node = self.type_spec()
-        var_declarations = [
-            VarDecl(var_node, type_node)
-            for var_node in var_nodes
-        ]
-        return var_declarations
 
     def procedure_declaration(self):
         """procedure_declaration :
