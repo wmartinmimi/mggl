@@ -17,6 +17,6 @@ int x, c;
 
 { // Main 
 
-   Alpha(3 + 5, 7);  // procedure call
+   Alpha(3 + 5, 7); // procedure call
 
 }.  // Main 

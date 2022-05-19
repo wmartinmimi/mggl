@@ -1026,6 +1026,8 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(param_node)
 
         proc_symbol = self.current_scope.lookup(node.proc_name)
+        if proc_symbol is None:
+            self.error(error_code=ErrorCode.ID_NOT_FOUND, token=node.token)
         # accessed by the interpreter when executing procedure call
         node.proc_symbol = proc_symbol
 
