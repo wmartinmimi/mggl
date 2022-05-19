@@ -5,18 +5,18 @@ int x, c;
 
    procedure Beta( int a ; int b );
    int x;
-   begin
+   {
       x = a * 10 + b * 2;
-   end;
+   };
 
-begin
+{
    x = (a + b ) * 2;
 
    Beta(5, 10);      /* procedure call */
-end;
+};
 
-begin // Main 
+{ // Main 
 
    Alpha(3 + 5, 7);  // procedure call
 
-end.  // Main 
+}.  // Main 

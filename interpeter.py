@@ -53,14 +53,14 @@ class TokenType(Enum):
     DOT           = '.'
     COLON         = ':'
     COMMA         = ','
+    BEGIN         = '{'
+    END           = '}'  
     # block of reserved words
     PROGRAM       = 'PROGRAM'  # marks the beginning of the block
     INTEGER       = 'INT'
     REAL          = 'REAL'
     INTEGER_DIV   = 'DIV'
-    PROCEDURE     = 'PROCEDURE'
-    BEGIN         = 'BEGIN'
-    END           = 'END'      # marks the end of the block
+    PROCEDURE     = 'PROCEDURE'    # marks the end of the block
     # misc
     ID            = 'ID'
     INTEGER_CONST = 'INTEGER_CONST'
@@ -107,14 +107,12 @@ def _build_reserved_keywords():
          'INT': <TokenType.INTEGER: 'INT'>,
          'REAL': <TokenType.REAL: 'REAL'>,
          'DIV': <TokenType.INTEGER_DIV: 'DIV'>,
-         'PROCEDURE': <TokenType.PROCEDURE: 'PROCEDURE'>,
-         'BEGIN': <TokenType.BEGIN: 'BEGIN'>,
-         'END': <TokenType.END: 'END'>}
+         'PROCEDURE': <TokenType.PROCEDURE: 'PROCEDURE'>}
     """
     # enumerations support iteration, in definition order
     tt_list = list(TokenType)
     start_index = tt_list.index(TokenType.PROGRAM)
-    end_index = tt_list.index(TokenType.END)
+    end_index = tt_list.index(TokenType.PROCEDURE)
     reserved_keywords = {
         token_type.value: token_type
         for token_type in tt_list[start_index:end_index + 1]
@@ -717,9 +715,9 @@ class Parser:
 
         block : declarations compound_statement
 
-        declarations : (VAR (variable_declaration SEMI)+)? procedure_declaration*
+        declarations : ((variable_declaration SEMI)+)? procedure_declaration*
 
-        variable_declaration : ID (COMMA ID)* COLON type_spec
+        variable_declaration : type_spec ID (COMMA ID)* 
 
         procedure_declaration :
              PROCEDURE ID (LPAREN formal_parameter_list RPAREN)? SEMI block SEMI
@@ -727,7 +725,7 @@ class Parser:
         formal_params_list : formal_parameters
                            | formal_parameters SEMI formal_parameter_list
 
-        formal_parameters : ID (COMMA ID)* COLON type_spec
+        formal_parameters : type_spec ID (COMMA ID)*
 
         type_spec : INTEGER | REAL
 
