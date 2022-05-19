@@ -460,7 +460,7 @@ class Parser:
     def variable_declaration(self):
         """variable_declaration : type_spec ID (COMMA ID)* """
         type_node = self.type_spec()
-        
+
         var_nodes = [Var(self.current_token)]  # first ID
         self.eat(TokenType.ID)
 
@@ -476,8 +476,10 @@ class Parser:
         return var_declarations
 
     def formal_parameters(self):
-        """ formal_parameters : ID (COMMA ID)* COLON type_spec """
+        """ formal_parameters : type_spec ID (COMMA ID)* """
         param_nodes = []
+        
+        type_node = self.type_spec()
 
         param_tokens = [self.current_token]
         self.eat(TokenType.ID)
@@ -485,9 +487,6 @@ class Parser:
             self.eat(TokenType.COMMA)
             param_tokens.append(self.current_token)
             self.eat(TokenType.ID)
-
-        self.eat(TokenType.COLON)
-        type_node = self.type_spec()
 
         for param_token in param_tokens:
             param_node = Param(Var(param_token), type_node)
@@ -500,7 +499,9 @@ class Parser:
                                   | formal_parameters SEMI formal_parameter_list
         """
         # procedure Foo();
-        if not self.current_token.type == TokenType.ID:
+        if not (self.current_token.type == TokenType.INTEGER or
+            self.current_token.type == TokenType.REAL
+        ):
             return []
 
         param_nodes = self.formal_parameters()
