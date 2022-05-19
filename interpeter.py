@@ -55,7 +55,7 @@ class TokenType(Enum):
     COMMA         = ','
     # block of reserved words
     PROGRAM       = 'PROGRAM'  # marks the beginning of the block
-    INTEGER       = 'INTEGER'
+    INTEGER       = 'INT'
     REAL          = 'REAL'
     INTEGER_DIV   = 'DIV'
     VAR           = 'VAR'
@@ -66,7 +66,7 @@ class TokenType(Enum):
     ID            = 'ID'
     INTEGER_CONST = 'INTEGER_CONST'
     REAL_CONST    = 'REAL_CONST'
-    ASSIGN        = ':='
+    ASSIGN        = '='
     EOF           = 'EOF'
 
 
@@ -105,7 +105,7 @@ def _build_reserved_keywords():
 
     Result:
         {'PROGRAM': <TokenType.PROGRAM: 'PROGRAM'>,
-         'INTEGER': <TokenType.INTEGER: 'INTEGER'>,
+         'INT': <TokenType.INTEGER: 'INT'>,
          'REAL': <TokenType.REAL: 'REAL'>,
          'DIV': <TokenType.INTEGER_DIV: 'DIV'>,
          'VAR': <TokenType.VAR: 'VAR'>,
@@ -170,10 +170,18 @@ class Lexer:
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
-    def skip_comment(self):
-        while self.current_char != '}':
+    def skip_line(self):
+        while self.current_char != '\n' and self.current_char != None:
             self.advance()
-        self.advance()  # the closing curly brace
+        self.advance()
+
+    def skip_comment(self):
+        while self.current_char != '*' and self.peek() != '/':
+            if self.current_char == None:
+                self.error()
+            self.advance()
+        self.advance()
+        self.advance()
 
     def number(self):
         """Return a (multidigit) integer or float consumed from the input."""
@@ -235,9 +243,16 @@ class Lexer:
                 self.skip_whitespace()
                 continue
 
-            if self.current_char == '{':
+            if self.current_char == '/' and self.peek() == '*':
+                self.advance()
                 self.advance()
                 self.skip_comment()
+                continue
+
+            if self.current_char == '/' and self.peek() == '/':
+                self.advance()
+                self.advance()
+                self.skip_line()
                 continue
 
             if self.current_char.isalpha():
@@ -246,10 +261,10 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.number()
 
-            if self.current_char == ':' and self.peek() == '=':
+            if self.current_char == '=':
                 token = Token(
                     type=TokenType.ASSIGN,
-                    value=TokenType.ASSIGN.value,  # ':='
+                    value=TokenType.ASSIGN.value,  # '='
                     lineno=self.lineno,
                     column=self.column,
                 )
