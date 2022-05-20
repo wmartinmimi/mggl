@@ -4,9 +4,9 @@ procedure Alpha( int a , int b );
 int x, c;
 
    procedure Beta( real a, int b );
-   int x;
    {
-      x = a * 10 + b * 2;
+      x = 2; // alpha scope
+      int x, z= a * 10 + b * 2 + x; // after this x is beta scope
       int c, d;
       c = 1;
       {

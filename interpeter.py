@@ -257,17 +257,6 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.number()
 
-            if self.current_char == '=':
-                token = Token(
-                    type=TokenType.ASSIGN,
-                    value=TokenType.ASSIGN.value,  # '='
-                    lineno=self.lineno,
-                    column=self.column,
-                )
-                self.advance()
-                self.advance()
-                return token
-
             # single-character token
             try:
                 # get enum member by value, e.g.
@@ -300,6 +289,10 @@ class Lexer:
 class AST:
     pass
 
+
+class NodeGroup(AST):
+    def __init__(self, nodes):
+        self.nodes = nodes
 
 class BinOp(AST):
     def __init__(self, left, op, right):
@@ -457,7 +450,7 @@ class Parser:
         return declarations
 
     def variable_declaration(self):
-        """variable_declaration : type_spec ID (COMMA ID)* """
+        """variable_declaration : type_spec ID (COMMA ID)* (ASSIGN expr)?"""
         type_node = self.type_spec()
 
         var_nodes = [Var(self.current_token)]  # first ID
@@ -468,8 +461,18 @@ class Parser:
             var_nodes.append(Var(self.current_token))
             self.eat(TokenType.ID)
 
-        
-        return VarDecl(var_nodes, type_node)
+        nodes = []
+        if self.current_token.type == TokenType.ASSIGN:
+            token = self.current_token
+            self.eat(TokenType.ASSIGN)
+            expr = self.expr()
+            nodes.append(Assign(var_nodes[0], token, expr))
+            nodes.append(VarDecl(var_nodes, type_node))
+            for i in range(1, len(var_nodes)):
+                nodes.append(Assign(var_nodes[i], token, var_nodes[i - 1]))
+        else:
+            nodes.append(VarDecl(var_nodes, type_node))
+        return NodeGroup(nodes)
 
     def formal_parameters(self):
         """ formal_parameters : type_spec ID"""
@@ -911,6 +914,10 @@ class SemanticAnalyzer(NodeVisitor):
             message=f'{error_code.value} -> {token}',
         )
 
+    def visit_NodeGroup(self, node):
+        for node in node.nodes:
+            self.visit(node)
+
     def visit_Block(self, node):
         for declaration in node.declarations:
             self.visit(declaration)
@@ -1103,6 +1110,10 @@ class Interpreter(NodeVisitor):
     def log(self, msg):
         if _SHOULD_LOG_STACK:
             print(msg)
+
+    def visit_NodeGroup(self, node):
+        for node in node.nodes:
+            self.visit(node)
 
     def visit_Program(self, node):
         program_name = node.name
