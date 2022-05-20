@@ -357,8 +357,8 @@ class Block(AST):
 
 
 class VarDecl(AST):
-    def __init__(self, var_node, type_node):
-        self.var_node = var_node
+    def __init__(self, var_nodes, type_node):
+        self.var_nodes = var_nodes
         self.type_node = type_node
 
 
@@ -438,7 +438,7 @@ class Parser:
 
     def declarations(self):
         """
-        declarations : ((variable_declaration SEMI)+)? procedure_declaration*
+        declarations : (variable_declaration+)? procedure_declaration*
         """
         declarations = []
 
@@ -446,7 +446,8 @@ class Parser:
             self.current_token.type == TokenType.REAL
         ):
             var_decl = self.variable_declaration()
-            declarations.extend(var_decl)
+            declarations.append(var_decl)
+        
             self.eat(TokenType.SEMI)
 
         while self.current_token.type == TokenType.PROCEDURE:
@@ -456,7 +457,7 @@ class Parser:
         return declarations
 
     def variable_declaration(self):
-        """variable_declaration : type_spec ID (COMMA ID)* """
+        """variable_declaration : type_spec ID (COMMA ID)* SEMI"""
         type_node = self.type_spec()
 
         var_nodes = [Var(self.current_token)]  # first ID
@@ -467,11 +468,8 @@ class Parser:
             var_nodes.append(Var(self.current_token))
             self.eat(TokenType.ID)
 
-        var_declarations = [
-            VarDecl(var_node, type_node)
-            for var_node in var_nodes
-        ]
-        return var_declarations
+        
+        return VarDecl(var_nodes, type_node)
 
     def formal_parameters(self):
         """ formal_parameters : type_spec ID (COMMA ID)* """
@@ -576,10 +574,15 @@ class Parser:
         statement : compound_statement
                   | proccall_statement
                   | assignment_statement
+                  | variable declaration
                   | empty
         """
         if self.current_token.type == TokenType.BEGIN:
             node = self.compound_statement()
+        elif (self.current_token.type == TokenType.INTEGER or
+              self.current_token.type == TokenType.REAL
+        ):
+            node = self.variable_declaration()
         elif (self.current_token.type == TokenType.ID and
               self.lexer.current_char == '('
         ):
@@ -989,18 +992,19 @@ class SemanticAnalyzer(NodeVisitor):
 
         # We have all the information we need to create a variable symbol.
         # Create the symbol and insert it into the symbol table.
-        var_name = node.var_node.value
-        var_symbol = VarSymbol(var_name, type_symbol)
+        for var in node.var_nodes:
+            var_name = var.value
+            var_symbol = VarSymbol(var_name, type_symbol)
 
-        # Signal an error if the table already has a symbol
-        # with the same name
-        if self.current_scope.lookup(var_name, current_scope_only=True):
-            self.error(
-                error_code=ErrorCode.DUPLICATE_ID,
-                token=node.var_node.token,
-            )
+            # Signal an error if the table already has a symbol
+            # with the same name
+            if self.current_scope.lookup(var_name, current_scope_only=True):
+                self.error(
+                    error_code=ErrorCode.DUPLICATE_ID,
+                    token=node.var.token,
+                )
 
-        self.current_scope.insert(var_symbol)
+            self.current_scope.insert(var_symbol)
 
     def visit_Assign(self, node):
         # right-hand side
