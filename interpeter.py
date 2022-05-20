@@ -438,7 +438,7 @@ class Parser:
 
     def declarations(self):
         """
-        declarations : (variable_declaration+)? procedure_declaration*
+        declarations : (variable_declaration SEMI+)? procedure_declaration*
         """
         declarations = []
 
@@ -457,7 +457,7 @@ class Parser:
         return declarations
 
     def variable_declaration(self):
-        """variable_declaration : type_spec ID (COMMA ID)* SEMI"""
+        """variable_declaration : type_spec ID (COMMA ID)* """
         type_node = self.type_spec()
 
         var_nodes = [Var(self.current_token)]  # first ID
@@ -472,27 +472,18 @@ class Parser:
         return VarDecl(var_nodes, type_node)
 
     def formal_parameters(self):
-        """ formal_parameters : type_spec ID (COMMA ID)* """
-        param_nodes = []
+        """ formal_parameters : type_spec ID"""
         
         type_node = self.type_spec()
 
-        param_tokens = [self.current_token]
+        param_token = self.current_token
         self.eat(TokenType.ID)
-        while self.current_token.type == TokenType.COMMA:
-            self.eat(TokenType.COMMA)
-            param_tokens.append(self.current_token)
-            self.eat(TokenType.ID)
 
-        for param_token in param_tokens:
-            param_node = Param(Var(param_token), type_node)
-            param_nodes.append(param_node)
-
-        return param_nodes
+        return Param(Var(param_token), type_node)
 
     def formal_parameter_list(self):
         """ formal_parameter_list : formal_parameters
-                                  | formal_parameters SEMI formal_parameter_list
+                                  | formal_parameters COMMA formal_parameter_list
         """
         # procedure Foo();
         if not (self.current_token.type == TokenType.INTEGER or
@@ -500,11 +491,11 @@ class Parser:
         ):
             return []
 
-        param_nodes = self.formal_parameters()
+        param_nodes = [self.formal_parameters()]
 
-        while self.current_token.type == TokenType.SEMI:
-            self.eat(TokenType.SEMI)
-            param_nodes.extend(self.formal_parameters())
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            param_nodes.append(self.formal_parameters())
 
         return param_nodes
 
