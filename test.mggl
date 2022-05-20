@@ -1,5 +1,6 @@
 program Main;
 
+{
 int x;
 
 procedure Beta( real a, int b ){
@@ -18,9 +19,9 @@ procedure Beta( real a, int b ){
 }
 
 procedure Alpha( int a , int b ){
-   //{
+   {
       int x, c;
-   //}
+   }
    x = (a + b ) * 2;
 
    Beta(5.5, 10);      /* procedure call */
@@ -31,3 +32,4 @@ procedure Alpha( int a , int b ){
    Alpha(3 + 5, 7); // procedure call
 
 }  // Main 
+}
