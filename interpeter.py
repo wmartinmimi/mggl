@@ -454,8 +454,8 @@ class Parser:
                 token = self.current_token
                 self.eat(TokenType.ASSIGN)
                 expr = self.expr()
-                nodes.append(Assign(var_nodes[0], token, expr))
                 nodes.append(VarDecl(var_nodes, type_node))
+                nodes.append(Assign(var_nodes[0], token, expr))
                 for i in range(1, len(var_nodes)):
                     nodes.append(Assign(var_nodes[i], token, var_nodes[i - 1]))
             else:
@@ -518,7 +518,7 @@ class Parser:
                 self.current_token.type == TokenType.REAL or
                 self.current_token.type == TokenType.PROCEDURE
             ):
-                node = self.declaration()
+                nodes.append(self.declaration())
             else:
                 nodes.append(self.statement())
                 self.eat(TokenType.SEMI)
@@ -912,7 +912,6 @@ class SemanticAnalyzer(NodeVisitor):
 
     def visit_ProcedureDecl(self, node):
         proc_name = node.proc_name
-        print('t')
         proc_symbol = ProcedureSymbol(proc_name)
         self.current_scope.insert(proc_symbol)
 
@@ -958,7 +957,7 @@ class SemanticAnalyzer(NodeVisitor):
             if self.current_scope.lookup(var_name, current_scope_only=True):
                 self.error(
                     error_code=ErrorCode.DUPLICATE_ID,
-                    token=node.var.token,
+                    token=var.token,
                 )
 
             self.current_scope.insert(var_symbol)
