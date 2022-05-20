@@ -3,9 +3,13 @@ program Main;
 int x;
 
 procedure Beta( real a, int b ){
-   x = 2; // alpha scope
-   int x, z= a * 10 + b * 2 + x; // after this x is beta scope
+   {
+      int z;
+      z = a * 10 + b * 2; // after this x is beta scope
+   }
+   {
    int c, d;
+   }
    c = 1;
    {
       a = 2;

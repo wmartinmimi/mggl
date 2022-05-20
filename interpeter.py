@@ -534,44 +534,31 @@ class Parser:
 
     def compound_statement(self):
         """
-        compound_statement: BEGIN statement_list END
+        compound_statement: BEGIN (((statement SEMI) | compound_statment)*)? END
         """
         self.eat(TokenType.BEGIN)
-        nodes = self.statement_list()
+        nodes = []
+        while self.current_token.type != TokenType.END:
+            if self.current_token.type == TokenType.BEGIN:
+                nodes.append(self.compound_statement())
+            else:
+                nodes.append(self.statement())
+                self.eat(TokenType.SEMI)
         self.eat(TokenType.END)
 
         root = Compound()
-        for node in nodes:
-            root.children.append(node)
+        root.children = nodes
 
         return root
 
-    def statement_list(self):
-        """
-        statement_list : statement
-                       | statement SEMI statement_list
-        """
-        node = self.statement()
-
-        results = [node]
-
-        while self.current_token.type == TokenType.SEMI:
-            self.eat(TokenType.SEMI)
-            results.append(self.statement())
-
-        return results
-
     def statement(self):
         """
-        statement : compound_statement
-                  | proccall_statement
-                  | assignment_statement
-                  | variable declaration
-                  | empty
+        statement :   proccall_statement
+                    | assignment_statement
+                    | variable declaration
+                    | empty
         """
-        if self.current_token.type == TokenType.BEGIN:
-            node = self.compound_statement()
-        elif (self.current_token.type == TokenType.INTEGER or
+        if (self.current_token.type == TokenType.INTEGER or
               self.current_token.type == TokenType.REAL
         ):
             node = self.variable_declaration()
