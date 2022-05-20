@@ -412,14 +412,13 @@ class Parser:
             )
 
     def program(self):
-        """program : PROGRAM variable SEMI block DOT"""
+        """program : PROGRAM variable SEMI block"""
         self.eat(TokenType.PROGRAM)
         var_node = self.variable()
         prog_name = var_node.value
         self.eat(TokenType.SEMI)
         block_node = self.block()
         program_node = Program(prog_name, block_node)
-        self.eat(TokenType.DOT)
         return program_node
 
     def block(self):
