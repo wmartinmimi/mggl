@@ -504,7 +504,7 @@ class Parser:
 
     def procedure_declaration(self):
         """procedure_declaration :
-             PROCEDURE ID (LPAREN formal_parameter_list RPAREN)? SEMI block SEMI
+             PROCEDURE ID (LPAREN formal_parameter_list RPAREN)? block
         """
         self.eat(TokenType.PROCEDURE)
         proc_name = self.current_token.value
@@ -516,10 +516,8 @@ class Parser:
             params = self.formal_parameter_list()
             self.eat(TokenType.RPAREN)
 
-        self.eat(TokenType.SEMI)
         block_node = self.block()
         proc_decl = ProcedureDecl(proc_name, params, block_node)
-        self.eat(TokenType.SEMI)
         return proc_decl
 
     def type_spec(self):
