@@ -1,35 +1,11 @@
 program Main;
 
 {
-int x;
-
-procedure Beta( real a, int b ){
-   {
-      int z;
-      z = a * 10 + b * 2; // after this x is beta scope
+   
+   procedure Alpha(int a , int b ){
+      int x = a + b;
    }
    {
-   int c, d;
+      Alpha(3, 7);
    }
-   c = 1;
-   {
-      a = 2;
-      d = 2;
-   }
-}
-
-procedure Alpha( int a , int b ){
-   {
-      int x, c;
-   }
-   x = (a + b ) * 2;
-
-   Beta(5.5, 10);      /* procedure call */
-}
-
-{ // Main 
-
-   Alpha(3 + 5, 7); // procedure call
-
-}  // Main 
 }

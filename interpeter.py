@@ -438,7 +438,9 @@ class Parser:
 
             block_node = self.compound_statement()
             return ProcedureDecl(proc_name, params, block_node)
-        else:
+        elif (self.current_token.type == TokenType.INTEGER or
+              self.current_token.type == TokenType.REAL
+            ):
             type_node = self.type_spec()
             var_nodes = [Var(self.current_token)]
             self.eat(TokenType.ID)  # first ID
@@ -910,6 +912,7 @@ class SemanticAnalyzer(NodeVisitor):
 
     def visit_ProcedureDecl(self, node):
         proc_name = node.proc_name
+        print('t')
         proc_symbol = ProcedureSymbol(proc_name)
         self.current_scope.insert(proc_symbol)
 
