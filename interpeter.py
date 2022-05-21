@@ -83,8 +83,7 @@ class Token:
             >>> Token(TokenType.INTEGER, 7, lineno=5, column=10)
             Token(TokenType.INTEGER, 7, position=5:10)
         """
-        return 'Token({type}, {value}, position={lineno}:{column})'.format(
-            type=self.type,
+        return '{value} in {lineno}:{column}'.format(
             value=repr(self.value),
             lineno=self.lineno,
             column=self.column,
@@ -391,11 +390,11 @@ class Parser:
     def get_next_token(self):
         return self.lexer.get_next_token()
 
-    def error(self, error_code, token):
+    def error(self, error_code, token, expchar):
         raise ParserError(
             error_code=error_code,
             token=token,
-            message=f'{error_code.value} -> {token}',
+            message=f'{error_code.value}: {token} -> \'{expchar}\' expected'
         )
 
     def eat(self, token_type):
@@ -409,6 +408,7 @@ class Parser:
             self.error(
                 error_code=ErrorCode.UNEXPECTED_TOKEN,
                 token=self.current_token,
+                expchar=token_type.value
             )
 
     def program(self):
