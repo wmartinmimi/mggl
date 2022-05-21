@@ -882,9 +882,9 @@ class SemanticAnalyzer(NodeVisitor):
         self.visit(node.compound_statement)
 
     def visit_Program(self, node):
-        self.log('ENTER scope: global')
+        self.log(f'ENTER scope: {node.name}')
         global_scope = ScopedSymbolTable(
-            scope_name='global',
+            scope_name=node.name,
             scope_level=1,
             enclosing_scope=self.current_scope,  # None
         )
@@ -897,7 +897,7 @@ class SemanticAnalyzer(NodeVisitor):
         self.log(global_scope)
 
         self.current_scope = self.current_scope.enclosing_scope
-        self.log('LEAVE scope: global')
+        self.log(f'LEAVE scope: {node.name}')
 
     def visit_Compound(self, node):
         for child in node.children:
