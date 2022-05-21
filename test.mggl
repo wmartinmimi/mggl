@@ -3,7 +3,10 @@ program Main;
 {
    
    procedure Alpha(real a, int b ){
-      int x = a + b;
+      {
+         int x;
+      }
+      x = a + b;
    }
    {
       Alpha(3, 7);
