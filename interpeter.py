@@ -806,7 +806,7 @@ class ScopedSymbolTable:
         self.enclosing_scope = enclosing_scope
 
     def _init_builtins(self):
-        self.insert(BuiltinTypeSymbol('INTEGER'))
+        self.insert(BuiltinTypeSymbol('INT'))
         self.insert(BuiltinTypeSymbol('REAL'))
 
     def __str__(self):
